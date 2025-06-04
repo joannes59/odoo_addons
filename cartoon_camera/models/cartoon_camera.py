@@ -6,6 +6,7 @@ import numpy as np
 import base64
 import cv2
 import time
+import datetime
 import urllib.request
 from wsdiscovery.discovery import ThreadedWSDiscovery
 from onvif import ONVIFCamera
@@ -36,7 +37,7 @@ class CartoonCamera(models.Model):
     ping = fields.Integer(string='Ping (ms)', default=0.0)
     wsdl_path = fields.Char(string='WDSL path', default="/addons/cartoon_camera/wsdl")
 
-    # IP PTZ camera
+    # IP PTZ camera, movement velocity
     velocity_h = fields.Float(string='Horizontal Velocity', default=0.1)
     velocity_v = fields.Float(string='Vertical Velocity', default=0.1)
 
@@ -80,8 +81,9 @@ class CartoonCamera(models.Model):
             camera_ids = self.search([('device_node', '=', f'{device.device_node}'), ('camera_type', '=', 'usb')])
 
             if not camera_ids:
+                name = f'{device.device_node}'.split('/')[-1]
                 camera_vals = {
-                    'name': f'{device.device_node}',
+                    'name': name,
                     'device_node': f'{device.device_node}',
                     'camera_type': 'usb',
                 }
@@ -103,12 +105,6 @@ class CartoonCamera(models.Model):
 
                 if camera.camera_model_id != camera_model_id:
                     camera.camera_model_id = camera_model_id
-
-
-
-
-
-
 
     def create_camera_model_usb(self, device):
         """ Create the model with the device information """
@@ -144,6 +140,7 @@ class CartoonCamera(models.Model):
                 vals = {
                     'uuid': uuid,
                     'ip': ip,
+                    'camera_type': 'ip',
                 }
                 camera_ids = self.search([('uuid', '=', uuid)])
                 if camera_ids:
@@ -218,56 +215,85 @@ class CartoonCamera(models.Model):
             time_start = time.time()
             if camera.state in ['disabled', 'draft']:
                 continue
-            try:
-                snapshot_url = f"{camera.http}{camera.ip}{camera.snap_path}"
-                img = urllib.request.urlopen(snapshot_url, timeout=1)
-                img_array = np.array(bytearray(img.read()), dtype=np.uint8)
-                frame = cv2.imdecode(img_array, -1)
-            except:
-                frame = np.zeros((camera.height, camera.width, 3), dtype=np.uint8)
 
-            if camera.flip:
-                frame = cv2.flip(frame, 0)
-
+            frame = camera.get_frame()
             file_path = camera.save_image(frame)
 
-            #print('--------ping----------', time.time() - time_start, file_path)
+            print('--------file_path----------', time.time() - time_start, file_path)
+
+    def get_frame_usb(self):
+        """ Get a frame """
+        self.ensure_one()
+        camera = self
+        cap = cv2.VideoCapture(camera.device_node)
+        ret, frame = cap.read()
+        cap.release()
+        return frame
+
+    def get_frame_ip(self):
+        """ Get a frame """
+        self.ensure_one()
+        camera = self
+        snapshot_url = f"{camera.http}{camera.ip}{camera.snap_path}"
+        img = urllib.request.urlopen(snapshot_url, timeout=2)
+        img_array = np.array(bytearray(img.read()), dtype=np.uint8)
+        frame = cv2.imdecode(img_array, -1)
+        return frame
+
+    def get_frame(self):
+        """ return frame """
+        self.ensure_one()
+        camera = self
+        frame = None
+        state = 'online'
+        try:
+            if camera.camera_type == 'usb':
+                frame = camera.get_frame_usb()
+            elif camera.camera_type == 'ip':
+                frame = camera.get_frame_ip()
+            else:
+                state = 'error'
+        except:
+            state = 'error'
+
+        if frame is None:
+            frame = np.zeros((camera.height or 480, camera.width or 640, 3), dtype=np.uint8)
+            state = 'error'
+
+        if camera.flip:
+            frame = cv2.flip(frame, 0)
+
+        if camera.state != state:
+            camera.state = state
+        return frame
 
     def save_image(self, frame):
         """ Save image """
         self.ensure_one()
-        date = fields.Datetime.now()
+        date = datetime.datetime.now()
         repertoire = self.get_save_path(date=date)
         file_name = self.name + date.strftime("_%Y%m%d_%H%M%S_") + str(date.microsecond).zfill(6) + '.png'
         file_path = os.path.join(repertoire, file_name)
         cv2.imwrite(file_path, frame)
+
+        height, width, _ = frame.shape
+
+        img_vals = {
+            'name': file_name,
+            'path': file_path,
+            'height': height,
+            'width': width,
+        }
+        self.env['cartoon.image'].create(img_vals)
         return file_path
 
-    def get_snapshot_usb(self):
-        """ Get image snapshot """
-        for camera in self:
-            time_start = time.time()
-
-
-    def get_snapshot_ip(self):
+    def get_snapshot(self):
         """ Get image snapshot """
         self.get_wsdl_path()
 
         for camera in self:
             time_start = time.time()
-            try:
-                snapshot_url = f"{camera.http}{camera.ip}{camera.snap_path}"
-                img = urllib.request.urlopen(snapshot_url, timeout=2)
-                img_array = np.array(bytearray(img.read()), dtype=np.uint8)
-                frame = cv2.imdecode(img_array, -1)
-                camera.state = 'online'
-            except:
-                frame = np.zeros((camera.height, camera.width, 3), dtype=np.uint8)
-                camera.state = 'error'
-                return False
-
-            if camera.flip:
-                frame = cv2.flip(frame, 0)
+            frame = camera.get_frame()
 
             # Encoder l'image en Base64
             _, buffer = cv2.imencode('.jpg', frame)
@@ -279,6 +305,7 @@ class CartoonCamera(models.Model):
             camera.width = width
             camera.frame = encoded_image
             camera.ping = int((time.time() - time_start) * 100.0)
+
         return True
 
     def pantilt(self):

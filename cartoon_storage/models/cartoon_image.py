@@ -6,11 +6,12 @@ class CartoonImage(models.Model):
 
     parent_id = fields.Many2one('cartoon.image', string='Parent Image')
     name = fields.Char(string='Name')
+    path = fields.Char(string='path')
     height = fields.Integer(string='Height')
     width = fields.Integer(string='Width')
     offset_x = fields.Integer(string='Offset X')
     offset_y = fields.Integer(string='Offset Y')
-    path_id = fields.Many2one('cartoon.path', string='File')
+    path_id = fields.Many2one('cartoon.path', string='Backup')
     perceptual_hash = fields.Char(string='Perceptual Hash')
     thumbnail = fields.Binary(string='Thumbnail')
     shap = fields.Char(string='Shap')
