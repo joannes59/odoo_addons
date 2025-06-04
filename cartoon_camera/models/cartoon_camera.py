@@ -10,12 +10,20 @@ import urllib.request
 from wsdiscovery.discovery import ThreadedWSDiscovery
 from onvif import ONVIFCamera
 import threading
+import pyudev
+import codecs
 
 class CartoonCamera(models.Model):
     _name = 'cartoon.camera'
     _description = 'Onvif Camera'
 
     name = fields.Char(string='Name')
+    camera_type = fields.Selection([('ip', 'ip'), ('usb', 'usb')])
+    device_node = fields.Char(string='Node')
+    camera_model_id = fields.Many2one('cartoon.camera.model', string='Model')
+    id_vendor = fields.Char(string='vendor ID', related='camera_model_id.id_vendor')
+
+    # IP ONVIF camera
     uuid = fields.Char(string='uuid')
     ip = fields.Char(string='IP Address')
     port = fields.Integer(string='Port', default=8899)
@@ -23,19 +31,33 @@ class CartoonCamera(models.Model):
     user = fields.Char(string='User', default='admin')
     password = fields.Char(string='Password', default='1234567890')
     snap_path = fields.Char(string='Snapshot Path', default="/webcapture.jpg?command=snap")
-    ping = fields.Integer(string='Ping (ms)', default=0.0)
-    fps = fields.Float(string='FPS', default=0.0)
-    flip = fields.Boolean(string='Flip Image', default=False)
     token = fields.Char(string='Token', default="000")
+    profile = fields.Text('Profile')
+    ping = fields.Integer(string='Ping (ms)', default=0.0)
+    wsdl_path = fields.Char(string='WDSL path', default="/addons/cartoon_camera/wsdl")
+
+    # IP PTZ camera
     velocity_h = fields.Float(string='Horizontal Velocity', default=0.1)
     velocity_v = fields.Float(string='Vertical Velocity', default=0.1)
-    height = fields.Integer(string='Height', default=720)
-    width = fields.Integer(string='Width', default=640)
+
+    # Composite screen camera
     nb_height = fields.Integer(string='Grid Rows', default=2)
     nb_width = fields.Integer(string='Grid Columns', default=1)
-    profile = fields.Text('Profile')
+
+
+
+
+    fps = fields.Float(string='FPS', default=0.0)
+    flip = fields.Boolean(string='Flip Image', default=False)
+
+
+    height = fields.Integer(string='Height', default=720)
+    width = fields.Integer(string='Width', default=640)
+
+
     frame = fields.Binary(string="Image Frame", attachment=True)
     save_path = fields.Char(string='Save path', default="/dev/shm")
+
     state = fields.Selection([('draft', 'draft'), ('online', 'online'), ('enabled', 'enabled'),
                               ('error', 'error'), ('disabled', 'disabled')],
                              string='State', default='draft')
@@ -47,7 +69,60 @@ class CartoonCamera(models.Model):
             elif record.state in ['disabled', 'draft', 'error', 'online']:
                 record.state = 'enabled'
 
-    def discovery(self):
+    def discovery_usb(self):
+        """
+        Discover USB cameras on the computer.
+        """
+        udev_context = pyudev.Context()
+        devices = udev_context.list_devices(subsystem='video4linux')
+
+        for device in devices:
+            camera_ids = self.search([('device_node', '=', f'{device.device_node}'), ('camera_type', '=', 'usb')])
+
+            if not camera_ids:
+                camera_vals = {
+                    'name': f'{device.device_node}',
+                    'device_node': f'{device.device_node}',
+                    'camera_type': 'usb',
+                }
+                camera = camera_ids.create(camera_vals)
+
+            elif len(camera_ids) > 1:
+                camera_ids[1:].unlink()
+                camera = camera_ids
+            else:
+                camera = camera_ids
+
+            camera.state = 'online'
+            id_vendor = device.properties.get('ID_USB_VENDOR_ID')
+            id_model = device.properties.get('ID_MODEL_ID')
+
+            if id_vendor or id_model:
+                model_ids = self.env['cartoon.camera.model'].search([('id_vendor', '=', id_vendor), ('id_model', '=', id_model)])
+                camera_model_id = model_ids and model_ids[0] or camera.create_camera_model_usb(device)
+
+                if camera.camera_model_id != camera_model_id:
+                    camera.camera_model_id = camera_model_id
+
+
+
+
+
+
+
+    def create_camera_model_usb(self, device):
+        """ Create the model with the device information """
+        self.ensure_one()
+        model_vals = {
+            'id_model': device.properties.get('ID_MODEL_ID'),
+            'id_vendor': device.properties.get('ID_USB_VENDOR_ID'),
+            'vendor_name': codecs.decode(device.properties.get('ID_VENDOR_ENC'), 'unicode-escape'),
+            'model_name': codecs.decode(device.properties.get('ID_MODEL_ENC'), 'unicode-escape'),
+            }
+        camera_model_id = self.env['cartoon.camera.model'].create(model_vals)
+        return camera_model_id
+
+    def discovery_ip(self):
         """
         Discover ONVIF-compatible cameras on the network.
         """
@@ -80,9 +155,11 @@ class CartoonCamera(models.Model):
 
     def get_wsdl_path(self):
         """ return local wsdl path """
-        module_path = os.path.dirname(os.path.abspath(__file__))
-        wsdl_path = module_path.replace('cartoon_camera/models', 'cartoon_camera/wsdl')
-        return wsdl_path
+        for camera in self:
+            if not camera.wsdl_path:
+                module_path = os.path.dirname(os.path.abspath(__file__))
+                wsdl_path = module_path.replace('cartoon_camera/models', 'cartoon_camera/wsdl')
+                camera.wsdl_path = get_wsdl_path
 
     def get_save_path(self, date=None):
         # Format du nom de répertoire basé sur l'heure et la minute
@@ -98,13 +175,14 @@ class CartoonCamera(models.Model):
 
     def get_camera_info(self):
         """ Get information on camera """
-        wsdl_path = self.get_wsdl_path()
+        self.get_wsdl_path()
 
         for camera in self:
+
             text_profile = ''
             # Connexion à la caméra ONVIF
             onvif_camera = ONVIFCamera(camera.ip, camera.port, camera.user, camera.password,
-                                       wsdl_dir=wsdl_path)
+                                       wsdl_dir=camera.wsdl_path)
             # Service de gestion des médias
             media_service = onvif_camera.create_media_service()
 
@@ -165,8 +243,16 @@ class CartoonCamera(models.Model):
         cv2.imwrite(file_path, frame)
         return file_path
 
-    def get_snapshot(self):
+    def get_snapshot_usb(self):
         """ Get image snapshot """
+        for camera in self:
+            time_start = time.time()
+
+
+    def get_snapshot_ip(self):
+        """ Get image snapshot """
+        self.get_wsdl_path()
+
         for camera in self:
             time_start = time.time()
             try:
@@ -197,14 +283,14 @@ class CartoonCamera(models.Model):
 
     def pantilt(self):
         """ move the camera """
-        wsdl_path = self.get_wsdl_path()
+        self.get_wsdl_path()
         pan_x = self.env.context.get('pan_x', 0.0)
         pan_y = self.env.context.get('pan_y', 0.0)
         #pan_z = self.env.context.get('pan_z', 0.0)
 
         for camera in self:
             onvif_camera = ONVIFCamera(camera.ip, camera.port, camera.user, camera.password,
-                                       wsdl_dir=wsdl_path)
+                                       wsdl_dir=camera.wsdl_path)
 
             ptz_service = onvif_camera.create_ptz_service()
             request = ptz_service.create_type('ContinuousMove')
@@ -219,6 +305,6 @@ class CartoonCamera(models.Model):
 
             # Exécution de la commande
             ptz_service.ContinuousMove(request)
-            time.sleep(0.5)
+            time.sleep(0.25)
             ptz_service.Stop({'ProfileToken': camera.token})
             camera.get_snapshot()

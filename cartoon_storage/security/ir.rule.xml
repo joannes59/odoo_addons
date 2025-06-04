@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Règle d'accès pour les résolutions non-custom -->
+    <record id="cartoon_resolution_custom_only" model="ir.rule">
+        <field name="name">Seules les résolutions custom sont modifiables</field>
+        <field name="model_id" ref="model_cartoon_resolution"/>
+        <field name="domain_force">[('readonly', '!=', True)]</field>
+        <field name="perm_read" eval="0"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+</odoo>

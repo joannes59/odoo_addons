@@ -11,6 +11,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/cartoon_camera_views.xml',
+        'views/cartoon_camera_model_views.xml',
     ],
     'installable': True,
     'application': True,

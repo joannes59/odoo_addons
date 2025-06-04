@@ -1,0 +1,9 @@
+id,width,height,standard_name,readonly
+cartoon_storage.qvga,320,240,qvga,True
+cartoon_storage.vga,640,480,vga,True
+cartoon_storage.svga,800,600,svga,True
+cartoon_storage.xga,1024,768,xga,True
+cartoon_storage.hd,1280,720,hd,True
+cartoon_storage.fullhd,1920,1080,fullhd,True
+cartoon_storage.4k,3840,2160,4K,True
+cartoon_storage.8k,7680,4320,8K,True

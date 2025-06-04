@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Résolutions de caméra -->
+    <record id="view_cartoon_resolution_list" model="ir.ui.view">
+        <field name="name">cartoon.resolution.list</field>
+        <field name="model">cartoon.resolution</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="readonly" invisible="1"/>
+                <field name="width"/>
+                <field name="height"/>
+                <field name="aspect_ratio"/>
+                <field name="standard_name"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Actions et menus -->
+    <record id="action_cartoon_camera_resolution" model="ir.actions.act_window">
+        <field name="name">Image resolution</field>
+        <field name="res_model">cartoon.resolution</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_cartoon_camera_resolution" name="Resolutions"
+              parent="cartoon_storage.menu_cartoon_configuration"
+              action="action_cartoon_camera_resolution"/>
+
+</odoo>

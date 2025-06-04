@@ -7,7 +7,10 @@
     "depends": ["base"],
     "python": ["fsspec"],
     "data": [
+        "data/cartoon.resolution.csv",
+
         "security/ir.model.access.csv",
+        "security/ir.rule.xml",
 
         "views/cartoon_menus.xml",
         "views/cartoon_storage_views.xml",
@@ -15,6 +18,8 @@
         "views/cartoon_path_extension_views.xml",
         "views/cartoon_image_views.xml",
         "views/cartoon_tag_views.xml",
+        "views/cartoon_resolution.xml",
+
 
     ],
     "installable": True,

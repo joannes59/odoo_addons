@@ -2,4 +2,5 @@ onvif-zeep
 wsdiscovery
 opencv-python
 numpy
-odoorpc
+pyudev
+

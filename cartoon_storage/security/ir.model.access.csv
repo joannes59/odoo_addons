@@ -4,3 +4,5 @@ access_path,access_path,model_cartoon_path,base.group_user,1,1,1,1
 access_extension,access_path_extension,model_cartoon_path_extension,base.group_user,1,1,1,1
 access_image,access_image,model_cartoon_image,base.group_user,1,1,1,1
 access_tag,access_tag,model_cartoon_image_tag,base.group_user,1,1,1,1
+access_resolution,access_resolution,model_cartoon_resolution,base.group_user,1,1,1,1
+

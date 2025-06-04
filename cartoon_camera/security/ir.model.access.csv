@@ -1,3 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_cartoon_camera_user,access.cartoon.camera.user,model_cartoon_camera,base.group_user,1,1,1,1
-access_cartoon_camera_manager,access.cartoon.camera.manager,model_cartoon_camera,base.group_system,1,1,1,1
+access_cartoon_camera_model_user,access.cartoon.camera.model.user,model_cartoon_camera_model,base.group_user,1,1,1,1
