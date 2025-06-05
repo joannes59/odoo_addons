@@ -5,6 +5,7 @@
         <field name="arch" type="xml">
             <list>
                 <field name="name"/>
+                <field name="directory"/>
                 <field name="height"/>
                 <field name="width"/>
                 <field name="offset_x"/>
@@ -22,6 +23,7 @@
                 <sheet>
                     <group>
                         <field name="name"/>
+                        <field name="directory"/>
                         <field name="height"/>
                         <field name="width"/>
                         <field name="offset_x"/>

@@ -6,6 +6,7 @@ class CartoonImage(models.Model):
 
     parent_id = fields.Many2one('cartoon.image', string='Parent Image')
     name = fields.Char(string='Name')
+    directory = fields.Char(string='Directory')
     path = fields.Char(string='path')
     height = fields.Integer(string='Height')
     width = fields.Integer(string='Width')

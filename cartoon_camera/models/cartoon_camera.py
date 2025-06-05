@@ -211,6 +211,7 @@ class CartoonCamera(models.Model):
 
     def save_snapshot(self):
         """ get and save snapshot """
+        res = []
         for camera in self:
             time_start = time.time()
             if camera.state in ['disabled', 'draft']:
@@ -218,8 +219,8 @@ class CartoonCamera(models.Model):
 
             frame = camera.get_frame()
             file_path = camera.save_image(frame)
-
-            print('--------file_path----------', time.time() - time_start, file_path)
+            res.append(file_path)
+        return res
 
     def get_frame_usb(self):
         """ Get a frame """
@@ -271,16 +272,15 @@ class CartoonCamera(models.Model):
         """ Save image """
         self.ensure_one()
         date = datetime.datetime.now()
-        repertoire = self.get_save_path(date=date)
+        directory = self.get_save_path(date=date)
         file_name = self.name + date.strftime("_%Y%m%d_%H%M%S_") + str(date.microsecond).zfill(6) + '.png'
-        file_path = os.path.join(repertoire, file_name)
+        file_path = os.path.join(directory, file_name)
         cv2.imwrite(file_path, frame)
 
         height, width, _ = frame.shape
-
         img_vals = {
             'name': file_name,
-            'path': file_path,
+            'directory': directory,
             'height': height,
             'width': width,
         }
