@@ -11,4 +11,5 @@
     ],
     'installable': True,  # Whether the module can be installed
     'application': True,  # Whether the module is an app (has a menu)
+    'license': 'LGPL-3',
 }

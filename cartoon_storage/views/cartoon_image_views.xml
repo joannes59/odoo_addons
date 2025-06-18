@@ -22,15 +22,24 @@
             <form>
                 <sheet>
                     <group>
-                        <field name="name"/>
-                        <field name="directory"/>
-                        <field name="height"/>
-                        <field name="width"/>
-                        <field name="offset_x"/>
-                        <field name="offset_y"/>
-                        <field name="path_id"/>
-                        <field name="perceptual_hash"/>
-                        <field name="thumbnail"/>
+                        <group>
+                            <field name="encoded_image"
+                                   widget="image"
+                                   filename="path"
+                                   nolabel="1"
+                                   alt="Image preview"/>
+                        </group>
+                        <group>
+                            <field name="name"/>
+                            <field name="directory"/>
+                            <field name="height"/>
+                            <field name="width"/>
+                            <field name="offset_x"/>
+                            <field name="offset_y"/>
+                            <field name="path"/>
+                            <field name="perceptual_hash"/>
+                            <field name="thumbnail"/>
+                        </group>
                     </group>
                 </sheet>
             </form>

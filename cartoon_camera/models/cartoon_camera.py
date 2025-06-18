@@ -56,7 +56,7 @@ class CartoonCamera(models.Model):
     width = fields.Integer(string='Width', default=640)
 
 
-    frame = fields.Binary(string="Image Frame", attachment=True)
+    encoded_image = fields.Binary(string="Preview", attachment=True)
     save_path = fields.Char(string='Save path', default="/dev/shm")
 
     state = fields.Selection([('draft', 'draft'), ('online', 'online'), ('enabled', 'enabled'),
@@ -303,7 +303,7 @@ class CartoonCamera(models.Model):
             height, width, _ = frame.shape
             camera.height = height
             camera.width = width
-            camera.frame = encoded_image
+            camera.encoded_image = encoded_image
             camera.ping = int((time.time() - time_start) * 100.0)
 
         return True

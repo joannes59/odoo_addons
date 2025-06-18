@@ -45,7 +45,7 @@
                         <page string="Visual">
                             <group>
                                 <group>
-                                    <field name="frame" widget="image" nolabel="1"/>
+                                    <field name="encoded_image" widget="image" nolabel="1"/>
                                 </group>
                                 <group>
                                     <field name="flip" widget="boolean_toggle"/>
@@ -61,27 +61,27 @@
                                             <!-- Bouton haut -->
                                             <button name="pantilt" type="object" class="btn btn-secondary"
                                                     context="{'pan_y': 1.0}">
-                                                <span class="fa fa-arrow-up"/>
+                                                <span class="fa fa-arrow-up" title="up"/>
                                             </button>
                                         </div>
                                         <div style="display: flex; justify-content: center; margin-top: 10px;">
                                             <!-- Bouton gauche -->
                                             <button name="pantilt" type="object" class="btn btn-secondary"
                                                     style="margin-right: 5px;" context="{'pan_x': 1.0}">
-                                                <span class="fa fa-arrow-left"/>
+                                                <span class="fa fa-arrow-left" title="left"/>
                                             </button>
                                             <span style="margin-left: 25px;margin-right: 25px;"></span>
                                             <!-- Bouton droite -->
                                             <button name="pantilt" type="object" class="btn btn-secondary"
                                                     style="margin-left: 5px;" context="{'pan_x': -1.0}">
-                                                <span class="fa fa-arrow-right"/>
+                                                <span class="fa fa-arrow-right" title="right"/>
                                             </button>
                                         </div>
                                         <div style="text-align: center; margin-top: 10px;">
                                             <!-- Bouton bas -->
                                             <button name="pantilt" type="object" class="btn btn-secondary"
                                                     context="{'pan_y': -1.0}">
-                                                <span class="fa fa-arrow-down"/>
+                                                <span class="fa fa-arrow-down" title="down"/>
                                             </button>
                                         </div>
                                     </div>

@@ -20,7 +20,7 @@ class CartoonPath(models.Model):
     islink = fields.Boolean('Is link')
     isfile = fields.Boolean('Is file')
     path_type = fields.Char(string='Type', required=True, index=True)
-    extension_id = fields.Many2one('cartoon.path.extension', string='Storage', index=True)
+    extension_id = fields.Many2one('cartoon.path.extension', string='Extension', index=True)
     state = fields.Char(string='State')
 
     @api.model

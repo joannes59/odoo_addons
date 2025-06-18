@@ -24,7 +24,6 @@ class CartoonStorage(models.Model):
     options = fields.Text(string='Options')
     creation_date = fields.Datetime(string='Creation Date')
     update_date = fields.Datetime(string='Update Date')
-    file_id = fields.Many2one('cartoon.file', string='File')
     state = fields.Char(string='State')
     host = fields.Char(string='Host')
     port = fields.Integer(string='Port')
