@@ -7,6 +7,9 @@ import numpy as np
 
 _logger = logging.getLogger(__name__)
 
+cv2_supported_extensions = ["bmp", "dib", "jpeg", "jpg", "jpe", "jp2", "png", "webp", "pbm", "pgm", "ppm",
+                            "sr", "ras", "tiff", "tif", "exr", "hdr", "pic"]
+
 
 class CartoonImage(models.Model):
     _name = "cartoon.image"
@@ -36,7 +39,11 @@ class CartoonImage(models.Model):
     def _compute_path(self):
         for record in self:
             if record.name:
-                record.image_type = record.name.split('.')[-1]
+                image_type = record.name.split('.')[-1]
+                if image_type in cv2_supported_extensions:
+                    record.image_type = image_type
+                else:
+                    record.image_type = False
             else:
                 record.image_type = False
 
@@ -50,7 +57,6 @@ class CartoonImage(models.Model):
         self.ensure_one()
         frame = np.zeros((self.height or 480, self.width or 640, 3), dtype=np.uint8)
         image_type = self.image_type or "jpg"
-        # todo check image type
         _, buffer = cv2.imencode(f'.{image_type}', frame)
         encoded_image = base64.b64encode(buffer).decode('utf-8')
         return encoded_image

@@ -5,4 +5,4 @@ access_extension,access_path_extension,model_cartoon_path_extension,base.group_u
 access_image,access_image,model_cartoon_image,base.group_user,1,1,1,1
 access_tag,access_tag,model_cartoon_image_tag,base.group_user,1,1,1,1
 access_resolution,access_resolution,model_cartoon_resolution,base.group_user,1,1,1,1
-
+access_cartoon_image_import_wizard,access_cartoon_image_import_wizard,model_cartoon_image_import_wizard,base.group_user,1,1,1,1

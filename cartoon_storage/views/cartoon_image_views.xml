@@ -21,7 +21,7 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
-                    <group>
+                    <group invisible="name == False">
                         <group>
                             <field name="encoded_image"
                                    widget="image"
@@ -36,11 +36,14 @@
                             <field name="width"/>
                             <field name="offset_x"/>
                             <field name="offset_y"/>
-                            <field name="path"/>
-                            <field name="perceptual_hash"/>
-                            <field name="thumbnail"/>
+                            <field name="path" invisible="1"/>
                         </group>
                     </group>
+                    <button name="%(action_cartoon_image_import_wizard)d"
+                            type="action"
+                            string="Importer une image"
+                            class="btn-secondary"
+                            invisible="name != False"/>
                 </sheet>
             </form>
         </field>

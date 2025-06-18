@@ -12,6 +12,8 @@
         "security/ir.model.access.csv",
         "security/ir.rule.xml",
 
+        "views/cartoon_image_import_wizard_views.xml",
+
         "views/cartoon_menus.xml",
         "views/cartoon_storage_views.xml",
         "views/cartoon_path_views.xml",
