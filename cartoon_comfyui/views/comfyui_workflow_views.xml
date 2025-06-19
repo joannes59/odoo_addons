@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vue LIST -->
+    <record id="view_comfyui_workflow_list" model="ir.ui.view">
+        <field name="name">comfyui.workflow.list</field>
+        <field name="model">comfyui.workflow</field>
+        <field name="arch" type="xml">
+            <list string="Workflows ComfyUI">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vue FORM -->
+    <record id="view_comfyui_workflow_form" model="ir.ui.view">
+        <field name="name">comfyui.workflow.form</field>
+        <field name="model">comfyui.workflow</field>
+        <field name="arch" type="xml">
+            <form string="Workflow ComfyUI">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="description"/>
+                        </group>
+
+                            <field name="parameter_ids">
+                                <list string="Parameters" editable="bottom">
+                                    <field name="name"/>
+                                    <field name="meta_title"/>
+                                    <field name="class_type"/>
+                                    <field name="input_key"/>
+                                    <field name="input_type"/>
+                                    <field name="node"/>
+                                </list>
+                            </field>
+                            <button name="update_parameter_ids" type="object" string="update"/>
+
+
+                    </group>
+                    <field name="payload" widget="text"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_comfyui_workflow" model="ir.actions.act_window">
+        <field name="name">Workflows</field>
+        <field name="res_model">comfyui.workflow</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_comfyui_workflow" name="Workflows" parent="menu_comfyui_root" action="action_comfyui_workflow"
+              sequence="20"/>
+
+</odoo>

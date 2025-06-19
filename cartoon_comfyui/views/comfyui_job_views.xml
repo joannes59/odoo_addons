@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vue LIST -->
+    <record id="view_comfyui_job_list" model="ir.ui.view">
+        <field name="name">comfyui.job.list</field>
+        <field name="model">comfyui.job</field>
+        <field name="arch" type="xml">
+            <list string="Jobs ComfyUI">
+                <field name="name"/>
+                <field name="job_id"/>
+                <field name="workflow_id"/>
+                <field name="status"/>
+                <field name="comfyui_url"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vue FORM -->
+    <record id="view_comfyui_job_form" model="ir.ui.view">
+        <field name="name">comfyui.job.form</field>
+        <field name="model">comfyui.job</field>
+        <field name="arch" type="xml">
+            <form string="Job ComfyUI">
+                <sheet>
+                    <header>
+                        <button name="send_to_comfyui" type="object" string="Envoyer à ComfyUI" class="btn-primary"/>
+                        <button name="check_job_status" type="object" string="status" class="btn-primary"/>
+                        <field name="status" widget="statusbar"/>
+                    </header>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="workflow_id"/>
+
+                        </group>
+                        <group>
+                            <field name="comfyui_url"/>
+                            <field name="job_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Payload">
+                            <field name="payload" widget="text"/>
+                        </page>
+                        <page string="Response">
+                            <field name="response" widget="text"/>
+                        </page>
+                    </notebook>
+
+                </sheet>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_comfyui_job" model="ir.actions.act_window">
+        <field name="name">Jobs ComfyUI</field>
+        <field name="res_model">comfyui.job</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crée et envoie des requêtes à un serveur ComfyUI.
+            </p>
+        </field>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_comfyui_root" name="ComfyUI" sequence="10" parent="cartoon_storage.menu_cartoon_root"/>
+    <menuitem id="menu_comfyui_job" name="Jobs" parent="menu_comfyui_root" action="action_comfyui_job" sequence="10"/>
+
+</odoo>
