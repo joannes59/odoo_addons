@@ -1,0 +1,53 @@
+<odoo>
+
+    <record id="view_cartoon_image_deepface_form" model="ir.ui.view">
+        <field name="name">cartoon.image.form</field>
+        <field name="model">cartoon.image</field>
+        <field name="inherit_id" ref="cartoon_storage.view_cartoon_image_form"/>
+        <field name="arch" type="xml">
+
+            <notebook position="inside">
+                <page name="face" string="face" invisible="name == False">
+                    <group>
+
+                        <group>
+                            <field name="face_count"/>
+
+                        </group>
+                        <group>
+                            <button name="compute_face_count"
+                                    type="object"
+                                    string="Face detection"
+                                    class="btn-secondary"
+                            />
+                        </group>
+                        <field name="face_ids">
+                            <list>
+                                <field name="surface" invisible="1"/>
+                                <field name="age"/>
+                                <field name="dominant_gender"/>
+                                <field name="dominant_emotion"/>
+                                <field name="emotion_happy"/>
+                                <field name="emotion_angry"/>
+                                <field name="emotion_sad"/>
+                                <field name="emotion_disgust"/>
+                                <field name="emotion_fear"/>
+                                <field name="emotion_surprise"/>
+                                <field name="emotion_neutral"/>
+                                <button name="save_image" type="object" string="Save"/>
+                                <button name="save_large_image" type="object" string="Save large"/>
+
+                            </list>
+                        </field>
+                    </group>
+
+                </page>
+
+
+            </notebook>
+
+
+        </field>
+    </record>
+
+</odoo>

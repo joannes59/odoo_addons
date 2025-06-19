@@ -21,7 +21,7 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
-                    <group invisible="name == False">
+                    <group name="image" invisible="name == False">
                         <group>
                             <field name="encoded_image"
                                    widget="image"
@@ -44,6 +44,7 @@
                             string="Importer une image"
                             class="btn-secondary"
                             invisible="name != False"/>
+                    <notebook/>
                 </sheet>
             </form>
         </field>

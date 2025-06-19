@@ -73,7 +73,7 @@ class CartoonImage(models.Model):
                     else:
                         encoded_image = rec.get_black_encoded_image()
                 except Exception as e:
-                    _logger.warning(f"Erreur lors du chargement de l'image avec cv2 : {e}")
+                    _logger.warning(f"Error when loaded image with cv2 : {e}")
                     encoded_image = rec.get_black_encoded_image()
             else:
                 encoded_image = rec.get_black_encoded_image()
