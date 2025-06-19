@@ -16,9 +16,9 @@ class CartoonImage(models.Model):
     _description = "Image"
 
     parent_id = fields.Many2one('cartoon.image', string='Parent Image')
-    name = fields.Char(string='Name')
+    name = fields.Char(string='Name', index=True)
     directory = fields.Char(string='Directory')
-    path = fields.Char(string='path', compute='_compute_path')
+    path = fields.Char(string='path', compute='_compute_path', store=True, index=True)
     image_type = fields.Char(string='type', compute='_compute_path')
     height = fields.Integer(string='Height')
     width = fields.Integer(string='Width')

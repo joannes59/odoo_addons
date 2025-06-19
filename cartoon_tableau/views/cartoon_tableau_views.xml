@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+  <!-- List View -->
+  <record id="view_cartoon_tableau_list" model="ir.ui.view">
+    <field name="name">cartoon.tableau.list</field>
+    <field name="model">cartoon.tableau</field>
+    <field name="arch" type="xml">
+      <list string="Tableaux">
+        <field name="name"/>
+        <field name="status"/>
+        <field name="image_1_id"/>
+        <field name="image_2_id"/>
+        <field name="image_3_id"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- Form View -->
+  <record id="view_cartoon_tableau_form" model="ir.ui.view">
+    <field name="name">cartoon.tableau.form</field>
+    <field name="model">cartoon.tableau</field>
+    <field name="arch" type="xml">
+      <form string="Cartoon Tableau">
+        <sheet>
+          <group>
+            <field name="name"/>
+            <field name="status"/>
+          </group>
+          <group string="Images">
+            <field name="image_1_id" />
+            <field name="image_2_id" />
+            <field name="image_3_id" />
+            <field name="image_4_id" />
+            <field name="image_5_id" />
+            <field name="image_6_id" />
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- Action -->
+  <record id="action_cartoon_tableau" model="ir.actions.act_window">
+    <field name="name">Tableaux</field>
+    <field name="res_model">cartoon.tableau</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+  <!-- Menu -->
+  <menuitem id="menu_cartoon_tableaux_root" name="Tableaux" parent="cartoon_storage.menu_cartoon_root" sequence="50"/>
+  <menuitem id="menu_cartoon_tableaux" name="Tableaux" parent="menu_cartoon_tableaux_root" action="action_cartoon_tableau" sequence="10"/>
+
+</odoo>

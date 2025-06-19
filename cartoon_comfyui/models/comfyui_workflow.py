@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+import json
 
 class ComfyUIWorkflow(models.Model):
     _name = "comfyui.workflow"
@@ -15,4 +16,13 @@ class ComfyUIWorkflow(models.Model):
         """ Update node number """
         for parameter in self.parameter_ids:
             parameter.onchange_meta_title()
+
+    def get_default_parameter(self):
+        """ return parameter """
+        self.ensure_one()
+        workflow = json.loads(self.payload)
+        res = dict()
+        for parameter in self.parameter_ids:
+            res[parameter.name] = workflow[parameter.node]['inputs'][parameter.input_key]
+        return res
 

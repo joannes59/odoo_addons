@@ -36,6 +36,7 @@ class ComfyUIWorkflowParameter(models.Model):
     @api.onchange('input_key')
     def onchange_input_key(self):
         """ update the type """
+        workflow = json.loads(self.workflow_id.payload)
         if self.input_key and self.node:
             try:
                 self.input_type = str(type(workflow[node]['inputs'][self.input_key]).__name__)
@@ -43,3 +44,4 @@ class ComfyUIWorkflowParameter(models.Model):
                 self.input_type = False
         else:
             self.input_type = False
+

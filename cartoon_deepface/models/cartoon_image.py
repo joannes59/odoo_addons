@@ -10,7 +10,7 @@ _logger = logging.getLogger(__name__)
 class CartoonImage(models.Model):
     _inherit = 'cartoon.image'
 
-    face_count = fields.Integer(string='Number of face')
+    face_count = fields.Integer(string='Number of face', index=True)
     face_data = fields.Text(string='Analyse face JSON')
     face_ids = fields.One2many('cartoon.face', 'image_id', string='Faces')
 
@@ -29,11 +29,15 @@ class CartoonImage(models.Model):
                 # Appel DeepFace
                 result = DeepFace.analyze(img_path=image.path, actions=['age', 'gender', 'emotion'], enforce_detection=False)
                 if isinstance(result, list):  # DeepFace v1.x
-                    image.face_count = len(result)
+
                     image.face_data = str(result)
                     image.face_ids.unlink()
                     for face in result:
-                        image.face_ids.update_from_deepface_result(face, image)
+                        face_confidence = face.get('face_confidence', 0.0)
+                        if face_confidence > 0.9:
+                            image.face_ids.update_from_deepface_result(face, image)
+
+                    image.face_count = len(image.face_ids)
 
             except Exception as e:
                 _logger.warning(f"Erreur DeepFace sur {image.path} : {e}")

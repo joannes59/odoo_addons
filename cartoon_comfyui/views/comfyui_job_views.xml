@@ -25,14 +25,16 @@
                 <sheet>
                     <header>
                         <button name="send_to_comfyui" type="object" string="Envoyer à ComfyUI" class="btn-primary"/>
+                        <button name="update_paylod" type="object" string="parameters" class="btn-primary"/>
                         <button name="check_job_status" type="object" string="status" class="btn-primary"/>
+
+
                         <field name="status" widget="statusbar"/>
                     </header>
                     <group>
                         <group>
                             <field name="name"/>
                             <field name="workflow_id"/>
-
                         </group>
                         <group>
                             <field name="comfyui_url"/>
@@ -40,6 +42,9 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Parameter">
+                            <field name="parameter" widget="text"/>
+                        </page>
                         <page string="Payload">
                             <field name="payload" widget="text"/>
                         </page>
@@ -47,9 +52,7 @@
                             <field name="response" widget="text"/>
                         </page>
                     </notebook>
-
                 </sheet>
-
             </form>
         </field>
     </record>

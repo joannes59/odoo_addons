@@ -57,7 +57,7 @@ class CartoonCamera(models.Model):
 
 
     encoded_image = fields.Binary(string="Preview", attachment=True)
-    save_path = fields.Char(string='Save path', default="/dev/shm")
+    save_path = fields.Char(string='Save path', default="/home/joannes/Images/cartoon_images")
 
     state = fields.Selection([('draft', 'draft'), ('online', 'online'), ('enabled', 'enabled'),
                               ('error', 'error'), ('disabled', 'disabled')],
@@ -158,12 +158,12 @@ class CartoonCamera(models.Model):
                 wsdl_path = module_path.replace('cartoon_camera/models', 'cartoon_camera/wsdl')
                 camera.wsdl_path = get_wsdl_path
 
-    def get_save_path(self, date=None):
+    def get_save_path(self, date=None, directory=None):
         # Format du nom de répertoire basé sur l'heure et la minute
         self.ensure_one()
         date = date or fields.Datetime.now()
         nom_repertoire = date.strftime("camera%Y%m%d_%H_%M")
-        save_path = os.path.join(self.save_path, nom_repertoire)
+        save_path = os.path.join(directory or self.save_path, nom_repertoire)
 
         # Créer le répertoire s'il n'existe pas
         if not os.path.exists(save_path):
@@ -209,7 +209,7 @@ class CartoonCamera(models.Model):
                     continue_state = False
                 camera.save_snapshot()
 
-    def save_snapshot(self):
+    def save_snapshot(self, directory=None):
         """ get and save snapshot """
         res = []
         for camera in self:
@@ -218,7 +218,7 @@ class CartoonCamera(models.Model):
                 continue
 
             frame = camera.get_frame()
-            file_path = camera.save_image(frame)
+            file_path = camera.save_image(frame, directory=directory)
             res.append(file_path)
         return res
 
@@ -268,11 +268,11 @@ class CartoonCamera(models.Model):
             camera.state = state
         return frame
 
-    def save_image(self, frame):
+    def save_image(self, frame, directory=None):
         """ Save image """
         self.ensure_one()
         date = datetime.datetime.now()
-        directory = self.get_save_path(date=date)
+        directory = self.get_save_path(date=date, directory=directory)
         file_name = self.name + date.strftime("_%Y%m%d_%H%M%S_") + str(date.microsecond).zfill(6) + '.png'
         file_path = os.path.join(directory, file_name)
         cv2.imwrite(file_path, frame)
