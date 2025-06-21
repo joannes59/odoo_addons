@@ -200,15 +200,6 @@ class CartoonCamera(models.Model):
             worker_thread = threading.Thread(target=camera.continue_snapshot, daemon=True)
             worker_thread.start()
 
-    def continue_snapshot(self):
-        """ continue snapshot """
-        continue_state = True
-        while continue_state:
-            for camera in self:
-                if camera.state in ['disabled']:
-                    continue_state = False
-                camera.save_snapshot()
-
     def save_snapshot(self, directory=None):
         """ get and save snapshot """
         res = []
@@ -218,8 +209,8 @@ class CartoonCamera(models.Model):
                 continue
 
             frame = camera.get_frame()
-            file_path = camera.save_image(frame, directory=directory)
-            res.append(file_path)
+            image = camera.save_image(frame, directory=directory)
+            res.append(image)
         return res
 
     def get_frame_usb(self):
@@ -284,8 +275,8 @@ class CartoonCamera(models.Model):
             'height': height,
             'width': width,
         }
-        self.env['cartoon.image'].create(img_vals)
-        return file_path
+        image = self.env['cartoon.image'].create(img_vals)
+        return image
 
     def get_snapshot(self):
         """ Get image snapshot """

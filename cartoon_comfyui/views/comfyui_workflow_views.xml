@@ -29,15 +29,13 @@
                                 <list string="Parameters" editable="bottom">
                                     <field name="name"/>
                                     <field name="meta_title"/>
-                                    <field name="class_type"/>
                                     <field name="input_key"/>
-                                    <field name="input_type"/>
-                                    <field name="node"/>
+                                    <field name="class_type" readonly="1"/>
+                                    <field name="input_type" readonly="1"/>
+                                    <field name="node" readonly="1"/>
                                 </list>
                             </field>
-                            <button name="update_parameter_ids" type="object" string="update"/>
-
-
+                            <button name="update_parameter_ids" type="object" string="update ID node"/>
                     </group>
                     <field name="payload" widget="text"/>
                 </sheet>

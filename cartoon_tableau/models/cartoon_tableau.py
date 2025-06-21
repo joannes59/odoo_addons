@@ -7,9 +7,11 @@ class CartoonTableau(models.Model):
     _description = "Composite image made of multiple cartoon.image records"
 
     name = fields.Char("Name")
+    date = fields.Datetime('date')
 
 
     # Individual image slots (can be used for specific layout)
+
     image_1_id = fields.Many2one('cartoon.image', string="snapshot")
     image_2_id = fields.Many2one('cartoon.image', string="Image 2")
     image_3_id = fields.Many2one('cartoon.image', string="Image 3")
@@ -22,12 +24,17 @@ class CartoonTableau(models.Model):
         ('draft', 'Draft'),
         ('snapshot', 'snapshot'),
         ('ready', 'Ready'),
+        ('image_2', 'image_2'),
+        ('image_3', 'image_3'),
+        ('image_4', 'image_4'),
+        ('image_5', 'image_5'),
+        ('image_6', 'image_6'),
         ('archived', 'Archived')
     ], default='draft', string="Status")
 
     image_sended = fields.Char('Image sending')
 
-    @api.model
+
     def get_snapshot(self, directory=None):
         """ get snapshot """
         if not directory:
@@ -35,23 +42,16 @@ class CartoonTableau(models.Model):
             home_dir = pwd.getpwuid(uid).pw_dir
             directory = os.path.join(home_dir, 'Images/cartoon_images')
 
-        tableau_ids = self.search([('status', 'in', ['snapshot', 'ready'])])
-        if not tableau_ids:
-            now = fields.Datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            tableau_ids |= tableau_ids.create({'name': 'tableau' + now, 'status': 'snapshot'})
-
-        for tableau in tableau_ids:
+        for tableau in self:
             if tableau.status == 'snapshot' and not tableau.image_1_id:
                 camera_ids = self.env['cartoon.camera'].search([('state', 'not in', ['draft', 'disabled'])])
-                path_list = camera_ids.save_snapshot(directory=directory)
+                image_ids = camera_ids.save_snapshot(directory=directory)
 
-                for path in path_list:
-                    image = self.env['cartoon.image'].search([('path', '=', path)], limit=1)
-                    if image:
-                        image.compute_face_count()
-                        if image.face_ids:
-                            tableau.image_1_id = image
-                            tableau.status = 'ready'
+                for image in image_ids:
+                    image.compute_face_count()
+                    if image.face_ids and tableau.status == 'snapshot':
+                        tableau.image_1_id = image
+                        tableau.status = 'ready'
         return True
 
     @api.model
@@ -60,14 +60,24 @@ class CartoonTableau(models.Model):
         res = {}
         # first send
         if not tableau_id or tableau_id == 0:
-            tableau_ids = self.search([('status', '=', 'ready'), ('image_sended', '=', False), ('image_1_id', '!=', False)])
-            if tableau_ids:
-                tableau = tableau_ids[0]
-                if tableau.image_1_id.faces_ids:
-                    tableau.image_1_id.faces_ids[0].save_large_image()
-                    res['path_image'] = tableau.image_1_id.faces_ids[0].path
-                    res['tableau_id'] = tableau.id
+            now = fields.Datetime.now().strftime("%Y%m%d_%H-%M-%S")
+            tableau = self.create({'name': 'tableau_' + now, 'status': 'snapshot', 'date': fields.Datetime.now()})
+            tableau.get_snapshot()
+            res['tableau_id'] = tableau.id
+        else:
+            tableau = self.browse(tableau_id)
+            if tableau.status == 'snapshot':
+                tableau.get_snapshot()
 
+            elif tableau.status == 'ready':
+                if tableau.image_1_id.face_ids:
+                    if not tableau.image_1_id.face_ids[0].path:
+                        tableau.image_1_id.face_ids[0].save_large_image()
+                    res['path_image'] = tableau.image_1_id.face_ids[0].path
+                    res['tableau_id'] = tableau.id
+                    tableau.status = 'image_2'
+
+        print('----get_next_image-------', tableau_id, res)
         return res
 
 
