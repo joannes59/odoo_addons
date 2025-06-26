@@ -32,8 +32,10 @@
                         <group>
                             <field name="name"/>
                             <field name="directory"/>
+                            <field name="path"/>
                             <field name="height"/>
                             <field name="width"/>
+                            <field name="channels"/>
                             <field name="offset_x"/>
                             <field name="offset_y"/>
                             <field name="path" invisible="1"/>

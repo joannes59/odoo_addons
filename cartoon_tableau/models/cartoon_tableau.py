@@ -23,27 +23,27 @@ class CartoonTableau(models.Model):
     image_1_id = fields.Many2one('cartoon.image', string="snapshot", copy=False)
     workflow_1 = fields.Many2one('comfyui.workflow', string="workflow 1")
     job_1 = fields.Many2one('comfyui.job', string="job 1", copy=False)
-    time_1 = fields.Integer('Time 1 (ms)')
+    time_1 = fields.Integer('Time 1 (cycle)')
 
     image_2_id = fields.Many2one('cartoon.image', string="Image 2", copy=False)
     workflow_2 = fields.Many2one('comfyui.workflow', string="workflow 2")
     job_2 = fields.Many2one('comfyui.job', string="job 2", copy=False)
-    time_2 = fields.Integer('Time 2 (ms)')
+    time_2 = fields.Integer('Time 2 (cycle)')
 
     image_3_id = fields.Many2one('cartoon.image', string="Image 3", copy=False)
     workflow_3 = fields.Many2one('comfyui.workflow', string="workflow 3")
     job_3 = fields.Many2one('comfyui.job', string="job 3", copy=False)
-    time_3 = fields.Integer('Time 3 (ms)')
+    time_3 = fields.Integer('Time 3 (cycle)')
 
     image_4_id = fields.Many2one('cartoon.image', string="Image 4", copy=False)
     workflow_4 = fields.Many2one('comfyui.workflow', string="workflow 4")
     job_4 = fields.Many2one('comfyui.job', string="job 4", copy=False)
-    time_4 = fields.Integer('Time 4 (ms)')
+    time_4 = fields.Integer('Time 4 (cycle)')
 
     image_5_id = fields.Many2one('cartoon.image', string="Image 5", copy=False)
     workflow_5 = fields.Many2one('comfyui.workflow', string="workflow 5")
     job_5 = fields.Many2one('comfyui.job', string="job 5", copy=False)
-    time_5 = fields.Integer('Time 5 (ms)')
+    time_5 = fields.Integer('Time 5 (cycle)')
 
     # Status of the tableau
     status = fields.Selection([
@@ -88,12 +88,12 @@ class CartoonTableau(models.Model):
         else:
             tableau_id = self.id
         res = self.get_next_image(tableau_id)
-        _logger.info(f'-----res-----\n{res}')
+        _logger.info(f'-----button_test-----: {res}')
 
     @api.model
     def get_next_image(self, tableau_id=None):
         """ take the camera and the face """
-        print('-----tableau.id-----', tableau_id)
+        _logger.info('--get_next_image---tableau_id-----', tableau_id)
         res = {}
         # first send
         if not tableau_id or tableau_id == 0:
@@ -177,7 +177,7 @@ class CartoonTableau(models.Model):
             else:
                 res['tableau_id'] = 0
 
-        print('----get_next_image-------', tableau_id, res)
+        _logger.info('----get_next_image---end----', tableau_id, res)
         return res
 
 

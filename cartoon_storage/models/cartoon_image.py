@@ -53,6 +53,21 @@ class CartoonImage(models.Model):
             else:
                 record.path = False
 
+    def unlink(self):
+        for record in self:
+            if record.path and os.path.isfile(record.path):
+                try:
+                    os.remove(record.path)
+                    # Check and delete the parent directory if empty
+                    directory = os.path.dirname(record.path)
+                    if os.path.isdir(directory) and not os.listdir(directory):
+                        os.rmdir(directory)
+                        
+                except Exception as e:
+                    _logger.warning(f"Failed to delete file {record.path}: {e}")
+        return super(CartoonImage, self).unlink()
+
+
     def get_black_encoded_image(self):
         """ return black image """
         self.ensure_one()
