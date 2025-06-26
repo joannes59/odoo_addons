@@ -1,54 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-  <!-- List View -->
-  <record id="view_cartoon_tableau_list" model="ir.ui.view">
-    <field name="name">cartoon.tableau.list</field>
-    <field name="model">cartoon.tableau</field>
-    <field name="arch" type="xml">
-      <list string="Tableaux">
-        <field name="name"/>
-        <field name="status"/>
-        <field name="image_1_id"/>
-        <field name="image_2_id"/>
-        <field name="image_3_id"/>
-      </list>
-    </field>
-  </record>
+    <!-- List View -->
+    <record id="view_cartoon_tableau_list" model="ir.ui.view">
+        <field name="name">cartoon.tableau.list</field>
+        <field name="model">cartoon.tableau</field>
+        <field name="arch" type="xml">
+            <list string="Tableaux">
+                <field name="name"/>
+              <field name="tableau_type"/>
+                <field name="status"/>
+                <field name="image_1_id"/>
+                <field name="image_2_id"/>
+                <field name="image_3_id"/>
+            </list>
+        </field>
+    </record>
 
-  <!-- Form View -->
-  <record id="view_cartoon_tableau_form" model="ir.ui.view">
-    <field name="name">cartoon.tableau.form</field>
-    <field name="model">cartoon.tableau</field>
-    <field name="arch" type="xml">
-      <form string="Cartoon Tableau">
-        <sheet>
-          <group>
-            <field name="name"/>
-            <field name="status"/>
-          </group>
-          <group string="Images">
-            <field name="image_1_id" />
-            <field name="image_2_id" />
-            <field name="image_3_id" />
-            <field name="image_4_id" />
-            <field name="image_5_id" />
-            <field name="image_6_id" />
-          </group>
-        </sheet>
-      </form>
-    </field>
-  </record>
+    <!-- Form View -->
+    <record id="view_cartoon_tableau_form" model="ir.ui.view">
+        <field name="name">cartoon.tableau.form</field>
+        <field name="model">cartoon.tableau</field>
+        <field name="arch" type="xml">
+            <form string="Cartoon Tableau">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="tableau_type"/>
+                        <field name="status"/>
+                        <button name="button_test" type="object" string="Test" class="btn btn-primary"/>
+                    </group>
+                    <group>
+                        <group string="Images 1">
+                            <field name="image_1_id"/>
+                            <field name="workflow_1"/>
+                            <field name="job_1"/>
+                            <field name="time_1"/>
+                        </group>
+                        <group string="Images 2">
+                            <field name="image_2_id"/>
+                            <field name="workflow_2"/>
+                            <field name="job_2"/>
+                            <field name="time_2"/>
+                        </group>
+                        <group string="Images 3">
+                            <field name="image_3_id"/>
+                            <field name="workflow_3"/>
+                            <field name="job_3"/>
+                            <field name="time_3"/>
+                        </group>
+                        <group string="Images 4">
+                            <field name="image_4_id"/>
+                            <field name="workflow_4"/>
+                            <field name="job_4"/>
+                            <field name="time_4"/>
+                        </group>
+                        <group string="Images 5">
+                            <field name="image_5_id"/>
+                            <field name="workflow_5"/>
+                            <field name="job_5"/>
+                            <field name="time_5"/>
+                        </group>
+                    </group>
 
-  <!-- Action -->
-  <record id="action_cartoon_tableau" model="ir.actions.act_window">
-    <field name="name">Tableaux</field>
-    <field name="res_model">cartoon.tableau</field>
-    <field name="view_mode">list,form</field>
-  </record>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
-  <!-- Menu -->
-  <menuitem id="menu_cartoon_tableaux_root" name="Tableaux" parent="cartoon_storage.menu_cartoon_root" sequence="50"/>
-  <menuitem id="menu_cartoon_tableaux" name="Tableaux" parent="menu_cartoon_tableaux_root" action="action_cartoon_tableau" sequence="10"/>
+    <!-- Action -->
+    <record id="action_cartoon_tableau_template" model="ir.actions.act_window">
+        <field name="name">Template</field>
+        <field name="res_model">cartoon.tableau</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('tableau_type', '=', 'template')]</field>
+        <field name="context">{'default_tableau_type': 'template'}</field>
+
+    </record>
+    <record id="action_cartoon_tableau" model="ir.actions.act_window">
+        <field name="name">Tableaux</field>
+        <field name="res_model">cartoon.tableau</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('tableau_type', '!=', 'template')]</field>
+    </record>
+    <!-- Menu -->
+    <menuitem id="menu_cartoon_tableaux_root" name="Tableaux" parent="cartoon_storage.menu_cartoon_root" sequence="50"/>
+    <menuitem id="menu_cartoon_tableaux_template" name="Template" parent="menu_cartoon_tableaux_root"
+              action="action_cartoon_tableau_template" sequence="5"/>
+    <menuitem id="menu_cartoon_tableaux" name="Tableaux" parent="menu_cartoon_tableaux_root"
+              action="action_cartoon_tableau" sequence="10"/>
 
 </odoo>

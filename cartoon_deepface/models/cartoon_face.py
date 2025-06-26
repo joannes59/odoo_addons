@@ -53,7 +53,7 @@ class CartoonFace(models.Model):
             cv2.imwrite(full_path, face_crop)
             face.path = full_path
 
-    def save_large_image(self, directory='/home/joannes/Images/cartoon_face'):
+    def save_large_image(self, directory='/home/joannes/Images/cartoon_face', max_pixel=512):
         """ save images """
         for face in self:
             if not face.image_id or not face.image_id.path:
@@ -79,10 +79,23 @@ class CartoonFace(models.Model):
             img = cv2.imread(face.image_id.path)
             face_crop = img[y2:y3, x2:x3]
 
+            h, w = face_crop.shape[:2]
+            # On choisit le facteur d'échelle en fonction du plus grand côté
+            if h > w:
+                new_h = max_pixel
+                scale = new_h / h
+                new_w = int(w * scale)
+            else:
+                new_w = max_pixel
+                scale = new_w / w
+                new_h = int(h * scale)
+
+            face_resized = cv2.resize(face_crop, (new_w, new_h), interpolation=cv2.INTER_AREA)
+
             os.makedirs(directory, exist_ok=True)
             filename = f"face_large_{face.id}.png"
             full_path = os.path.join(directory, filename)
-            cv2.imwrite(full_path, face_crop)
+            cv2.imwrite(full_path, face_resized)
             face.path = full_path
 
     @api.depends('region_w', 'region_h')

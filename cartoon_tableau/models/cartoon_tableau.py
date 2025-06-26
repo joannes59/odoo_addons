@@ -1,23 +1,49 @@
 from odoo import models, fields, api
 import os
 import pwd
+import json
+
+import logging
+_logger = logging.getLogger(__name__)
 
 class CartoonTableau(models.Model):
     _name = "cartoon.tableau"
     _description = "Composite image made of multiple cartoon.image records"
 
     name = fields.Char("Name")
+    parent_id = fields.Many2one('cartoon.tableau', string='Template')
     date = fields.Datetime('date')
+    tableau_type = fields.Selection(
+        [('draft', 'Draft'), ('template', 'Template'), ('normal', 'Normal')], string="Type", default="normal"
+        )
 
 
     # Individual image slots (can be used for specific layout)
 
-    image_1_id = fields.Many2one('cartoon.image', string="snapshot")
-    image_2_id = fields.Many2one('cartoon.image', string="Image 2")
-    image_3_id = fields.Many2one('cartoon.image', string="Image 3")
-    image_4_id = fields.Many2one('cartoon.image', string="Image 4")
-    image_5_id = fields.Many2one('cartoon.image', string="Image 5")
-    image_6_id = fields.Many2one('cartoon.image', string="Image 6")
+    image_1_id = fields.Many2one('cartoon.image', string="snapshot", copy=False)
+    workflow_1 = fields.Many2one('comfyui.workflow', string="workflow 1")
+    job_1 = fields.Many2one('comfyui.job', string="job 1", copy=False)
+    time_1 = fields.Integer('Time 1 (ms)')
+
+    image_2_id = fields.Many2one('cartoon.image', string="Image 2", copy=False)
+    workflow_2 = fields.Many2one('comfyui.workflow', string="workflow 2")
+    job_2 = fields.Many2one('comfyui.job', string="job 2", copy=False)
+    time_2 = fields.Integer('Time 2 (ms)')
+
+    image_3_id = fields.Many2one('cartoon.image', string="Image 3", copy=False)
+    workflow_3 = fields.Many2one('comfyui.workflow', string="workflow 3")
+    job_3 = fields.Many2one('comfyui.job', string="job 3", copy=False)
+    time_3 = fields.Integer('Time 3 (ms)')
+
+    image_4_id = fields.Many2one('cartoon.image', string="Image 4", copy=False)
+    workflow_4 = fields.Many2one('comfyui.workflow', string="workflow 4")
+    job_4 = fields.Many2one('comfyui.job', string="job 4", copy=False)
+    time_4 = fields.Integer('Time 4 (ms)')
+
+    image_5_id = fields.Many2one('cartoon.image', string="Image 5", copy=False)
+    workflow_5 = fields.Many2one('comfyui.workflow', string="workflow 5")
+    job_5 = fields.Many2one('comfyui.job', string="job 5", copy=False)
+    time_5 = fields.Integer('Time 5 (ms)')
 
     # Status of the tableau
     status = fields.Selection([
@@ -54,28 +80,75 @@ class CartoonTableau(models.Model):
                         tableau.status = 'ready'
         return True
 
+    def button_test(self):
+        """ Test workflow """
+        self.ensure_one()
+        if self.status == "draft":
+            tableau_id = 0
+        else:
+            tableau_id = self.id
+        res = self.get_next_image(tableau_id)
+        _logger.info(f'-----res-----\n{res}')
+
     @api.model
     def get_next_image(self, tableau_id=None):
         """ take the camera and the face """
+        print('-----tableau.id-----', tableau_id)
         res = {}
         # first send
         if not tableau_id or tableau_id == 0:
-            now = fields.Datetime.now().strftime("%Y%m%d_%H-%M-%S")
-            tableau = self.create({'name': 'tableau_' + now, 'status': 'snapshot', 'date': fields.Datetime.now()})
+            now = fields.Datetime.now().strftime(" %Y%m%d_%H-%M-%S")
+            template_ids = self.search([('tableau_type', '=', 'template')])
+            tableau = template_ids[0].copy({'name': template_ids[0].name + now, 'status': 'snapshot',
+                                            'tableau_type': 'normal',
+                                            'parent_id': template_ids[0].id, 'date': fields.Datetime.now()})
             tableau.get_snapshot()
             res['tableau_id'] = tableau.id
         else:
-            tableau = self.browse(tableau_id)
-            if tableau.status == 'snapshot':
-                tableau.get_snapshot()
+            tableau = self.search([('id', '=', tableau_id)])
+            if tableau:
+                res['tableau_id'] = tableau.id
+                template = tableau.parent_id or tableau
 
-            elif tableau.status == 'ready':
-                if tableau.image_1_id.face_ids:
-                    if not tableau.image_1_id.face_ids[0].path:
-                        tableau.image_1_id.face_ids[0].save_large_image()
-                    res['path_image'] = tableau.image_1_id.face_ids[0].path
-                    res['tableau_id'] = tableau.id
-                    tableau.status = 'image_2'
+                if tableau.status == 'snapshot':
+                    tableau.get_snapshot()
+
+                elif tableau.status == 'ready':
+                    if tableau.image_1_id.face_ids:
+                        if not tableau.image_1_id.face_ids[0].path:
+                            tableau.image_1_id.face_ids[0].save_large_image()
+
+                        job_vals = {
+                            'name': 'JOB' + tableau.name + 'image_2',
+                            'workflow_id': template.workflow_1.id,
+                            }
+                        tableau.job_1 = self.env['comfyui.job'].create(job_vals)
+                        parameter = {'origin_image': tableau.image_1_id.face_ids[0].path}
+                        tableau.job_1.onchange_workflow_id()
+                        tableau.job_1.parameter = json.dumps(parameter, indent=4)
+                        tableau.job_1.update_paylod()
+                        tableau.job_1.send_to_comfyui()
+
+
+                        #res['path_image'] = tableau.image_1_id.face_ids[0].path
+                        tableau.status = 'image_2'
+
+                elif tableau.status == 'image_2':
+                    tableau.job_1.check_job_status()
+                    if tableau.job_1.status == 'pending':
+                        pass
+                    elif tableau.job_1.status == 'done':
+                        images = tableau.job_1.get_local_images()
+                        if images:
+                            tableau.image_2_id = self.env['cartoon.image'].create_by_path(images[0])
+                            tableau.image_2_id.put_transpary()
+                            res['path_image'] = tableau.image_2_id.path
+                            tableau.status = 'image_3'
+
+                elif tableau.status == 'image_3':
+                    res['tableau_id'] = 0
+            else:
+                res['tableau_id'] = 0
 
         print('----get_next_image-------', tableau_id, res)
         return res

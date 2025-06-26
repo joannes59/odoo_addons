@@ -23,7 +23,7 @@
                         </group>
                         <field name="face_ids">
                             <list>
-                                <field name="surface" invisible="1"/>
+                                <field name="surface" widget="handle"/>
                                 <field name="age"/>
                                 <field name="dominant_gender"/>
                                 <field name="dominant_emotion"/>
@@ -36,6 +36,7 @@
                                 <field name="emotion_neutral"/>
                                 <button name="save_image" type="object" string="Save"/>
                                 <button name="save_large_image" type="object" string="Save large"/>
+                                <field name="path"/>
 
                             </list>
                         </field>

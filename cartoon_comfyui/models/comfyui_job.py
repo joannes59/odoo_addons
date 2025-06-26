@@ -2,6 +2,7 @@ from odoo import models, fields, api
 import requests
 import json
 import logging
+import os
 
 _logger = logging.getLogger(__name__)
 
@@ -52,9 +53,6 @@ class ComfyUIJob(models.Model):
                     payload[parameter.node]['inputs'][parameter.input_key] = job_parameter[parameter.name]
             self.payload = json.dumps(payload, indent=4)
 
-
-
-
     def send_to_comfyui(self):
         for rec in self:
             if not rec.payload:
@@ -96,8 +94,6 @@ class ComfyUIJob(models.Model):
                     status = data.get(rec.job_id, {}).get('status', {})
                     if status.get('completed'):
                         rec.status = "done"
-                        outputs = data.get(rec.job_id, {}).get('outputs')
-
                     else:
                         rec.status = "pending"
 
@@ -110,3 +106,26 @@ class ComfyUIJob(models.Model):
             except Exception as e:
                 rec.response = str(e)
                 rec.status = "error"
+
+    def get_outputs(self):
+        """ get output response """
+        self.ensure_one()
+        outputs = json.loads(self.response).get(self.job_id, {}).get('outputs', {})
+        return outputs
+
+    def get_local_output_path(self):
+        """ return the path of comfyui output """
+        home_dir = os.path.expanduser("~")
+        return home_dir + '/ComfyUI/output/'
+
+    def get_local_images(self):
+        """ return node output images """
+        self.ensure_one()
+        outputs = self.get_outputs()
+        output_path = self.get_local_output_path()
+        res = []
+        for node in outputs:
+            images = outputs[node].get('images', [])
+            for image in images:
+                res.append(output_path + image['filename'])
+        return res

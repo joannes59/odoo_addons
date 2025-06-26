@@ -22,6 +22,7 @@ class CartoonImage(models.Model):
     image_type = fields.Char(string='type', compute='_compute_path')
     height = fields.Integer(string='Height')
     width = fields.Integer(string='Width')
+    channels = fields.Integer(string='channels')
     offset_x = fields.Integer(string='Offset X')
     offset_y = fields.Integer(string='Offset Y')
     path_id = fields.Many2one('cartoon.path', string='Backup')
@@ -79,4 +80,57 @@ class CartoonImage(models.Model):
                 encoded_image = rec.get_black_encoded_image()
 
             rec.encoded_image = encoded_image
+
+    @api.model
+    def create_by_path(self, full_path):
+        """ create record with the path """
+        name = os.path.basename(full_path)
+        directory = os.path.dirname(full_path)
+        image = self.create({'name': name, 'directory': directory})
+        image.check_size()
+        return image
+
+    def check_size(self):
+        """ compute the size of the image """
+        for image in self:
+            img = cv2.imread(image.path)
+            height, width, channels = img.shape
+            image.height = height
+            image.width = width
+            image.channels = channels
+
+    def gray_color(self):
+        """ put image in gray color """
+        for record in self:
+            image = cv2.imread(record.path)
+            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            cv2.imwrite("image_grayscale.jpg", gray_image)
+
+    def put_transpary(self):
+        # Charger l'image avec OpenCV en mode couleur (et alpha si existant)
+        for record in self:
+            image = cv2.imread(record.path, cv2.IMREAD_UNCHANGED)
+
+            if image.shape[2] == 4:  # Si l'image possède un canal alpha
+                # Séparer les canaux BGR et Alpha
+                bgr = image[:, :, :3]
+                alpha_original = image[:, :, 3]  # Extraire le canal alpha existant
+                # Convertir BGR en niveaux de gris
+                grayscale = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+
+                # Additionner les valeurs du canal de gris avec le canal alpha existant
+                alpha = np.minimum(alpha_original, 255 - grayscale)
+                #alpha = np.clip(alpha, 0, 255)
+                # Créer une nouvelle image RGBA en combinant les niveaux de gris avec le canal alpha
+            else:
+                # Si l'image est en RGB (sans alpha)
+                grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                alpha = 255 - grayscale.copy()  # Le canal alpha est basé sur les niveaux de gris
+
+            #rgba = cv2.merge([grayscale, grayscale, grayscale, alpha])
+            rgba = cv2.merge([grayscale, grayscale, grayscale, alpha])
+
+            # Enregistrer l'image en PNG (avec transparence)
+            cv2.imwrite(record.path, rgba)
+
 
