@@ -7,7 +7,17 @@ class ComfyUIPrompt(models.Model):
 
     name = fields.Char('Name')
     prompt = fields.Text(string='Prompt', required=True)
+
     parameters = fields.Text(string='Parameters', default='{}')
+
+    category = fields.Char("Category")
+    age = fields.Integer("Age")
+    dominant_gender = fields.Selection([
+        ('Man', 'Man'),
+        ('Woman', 'Woman'),
+        ('Other', 'Other'),
+    ], string="Gender")
+    dominant_emotion = fields.Char("Dominant Emotion")
 
     @api.model_create_multi
     def create(self, vals):

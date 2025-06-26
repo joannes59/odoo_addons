@@ -2,6 +2,7 @@ from odoo import models, fields, api
 import os
 import pwd
 import json
+import random
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -151,6 +152,8 @@ class CartoonTableau(models.Model):
                                 }
                             tableau.job_2 = self.env['comfyui.job'].create(job_vals)
                             parameter = {'origin_image': tableau.image_2_id.path}
+                            parameter['positive_text'] = tableau.create_face_prompt()
+
                             tableau.job_2.onchange_workflow_id()
                             tableau.job_2.parameter = json.dumps(parameter, indent=4)
                             tableau.job_2.update_paylod()
@@ -180,6 +183,33 @@ class CartoonTableau(models.Model):
         _logger.info(f'----get_next_image---end-: {tableau_id} {res}')
         return res
 
+
+    def create_face_prompt(self):
+        """ Check genre and emotion """
+        self.ensure_one()
+        prompt = "Medieval and Renaissance portrait, charcoal drawing with intricate linework."
+        if self.image_1_id.face_ids:
+            face = self.image_1_id.face_ids[0]
+            gender = ''
+            condition = [('category', '=', 'recueil_arras')]
+
+            if face.dominant_gender != 'Other':
+                condition.append(('dominant_gender', '=', face.dominant_gender))
+                prompt.replace('portrait', 'man portrait')
+
+            if face.dominant_emotion:
+                prompt += f"((( The dominant emotion is {face.dominant_emotion})))."
+
+            if face.age:
+                prompt += f"({face.age} old)."
+
+
+            prompt_ids = self.env['comfyui.prompt'].search(condition)
+
+            if prompt_ids:
+                random_id = random.randint(0, len(prompt_ids) - 1)
+                prompt += prompt_ids[random_id].prompt
+        return prompt
 
 
 
