@@ -26,3 +26,13 @@ class ComfyUIWorkflow(models.Model):
             res[parameter.name] = workflow[parameter.node]['inputs'][parameter.input_key]
         return res
 
+    def action_download_json(self):
+        """ return payload to file """
+        self.ensure_one()
+        action = {
+            'type': 'ir.actions.act_url',
+            'name': 'Download',
+            'url': f'/comfyui/workflow/download/{self.id}',
+            'target': 'self',
+        }
+        return action

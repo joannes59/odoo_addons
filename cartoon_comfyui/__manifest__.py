@@ -10,6 +10,9 @@
     'application': False,
     'data': [
         "security/ir.model.access.csv",
+
+        "views/comfyui_menu_views.xml",
+        "views/comfyui_prompt_views.xml",
         "views/comfyui_job_views.xml",
         "views/comfyui_workflow_views.xml",
     ],

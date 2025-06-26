@@ -1,0 +1,36 @@
+<odoo>
+  <record id="view_comfyui_prompt_form" model="ir.ui.view">
+    <field name="name">comfyui.prompt.form</field>
+    <field name="model">comfyui.prompt</field>
+    <field name="arch" type="xml">
+      <form string="ComfyUI Prompt">
+        <sheet>
+          <group>
+            <field name="name"/>
+            <field name="prompt"/>
+            <field name="parameters"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="view_comfyui_prompt_tree" model="ir.ui.view">
+    <field name="name">comfyui.prompt.list</field>
+    <field name="model">comfyui.prompt</field>
+    <field name="arch" type="xml">
+      <list string="ComfyUI Prompts">
+        <field name="name"/>
+      </list>
+    </field>
+  </record>
+
+  <record id="action_comfyui_prompt" model="ir.actions.act_window">
+    <field name="name">Prompts</field>
+    <field name="res_model">comfyui.prompt</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+  <menuitem id="menu_comfyui_prompt" name="Prompts" parent="cartoon_comfyui.menu_comfyui_root"
+            action="action_comfyui_prompt" sequence="20"/>
+</odoo>

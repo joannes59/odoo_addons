@@ -145,7 +145,34 @@ class CartoonTableau(models.Model):
                             res['path_image'] = tableau.image_2_id.path
                             tableau.status = 'image_3'
 
+                            job_vals = {
+                                'name': 'JOB' + tableau.name + 'image_3',
+                                'workflow_id': template.workflow_2.id,
+                                }
+                            tableau.job_2 = self.env['comfyui.job'].create(job_vals)
+                            parameter = {'origin_image': tableau.image_2_id.path}
+                            tableau.job_2.onchange_workflow_id()
+                            tableau.job_2.parameter = json.dumps(parameter, indent=4)
+                            tableau.job_2.update_paylod()
+                            tableau.job_2.send_to_comfyui()
+
                 elif tableau.status == 'image_3':
+                    tableau.job_2.check_job_status()
+                    if tableau.job_2.status == 'pending':
+                        pass
+                    elif tableau.job_2.status == 'done' and not tableau.image_3_id:
+                        images = tableau.job_2.get_local_images()
+                        if images:
+                            tableau.image_3_id = self.env['cartoon.image'].create_by_path(images[0])
+                            res['path_image'] = tableau.image_3_id.path
+                    elif tableau.job_2.status == 'done' and tableau.image_3_id:
+                        if tableau.time_2 > 0:
+                            tableau.time_2 -= 1
+                        else:
+                            tableau.status = 'image_4'
+
+
+                else:
                     res['tableau_id'] = 0
             else:
                 res['tableau_id'] = 0

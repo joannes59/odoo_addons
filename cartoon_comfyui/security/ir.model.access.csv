@@ -1,4 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_comfyui_job,access_comfyui_job,model_comfyui_job,base.group_user,1,1,1,1
+access_comfyui_prompt,access_comfyui_prompt,model_comfyui_prompt,base.group_user,1,1,1,1
 access_comfyui_workflow,access_comfyui_workflow,model_comfyui_workflow,base.group_user,1,1,1,1
 access_comfyui_workflow_parameter,access_comfyui_workflow_parameter,model_comfyui_workflow_parameter,base.group_user,1,1,1,1

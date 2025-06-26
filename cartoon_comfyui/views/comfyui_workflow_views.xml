@@ -18,7 +18,11 @@
         <field name="model">comfyui.workflow</field>
         <field name="arch" type="xml">
             <form string="Workflow ComfyUI">
+                <header>
+                    <button name="action_download_json" type="object" string="Download" class="btn-primary"/>
+                </header>
                 <sheet>
+
                     <group>
                         <group>
                             <field name="name"/>
@@ -51,7 +55,7 @@
     </record>
 
     <!-- MENU -->
-    <menuitem id="menu_comfyui_workflow" name="Workflows" parent="menu_comfyui_root" action="action_comfyui_workflow"
+    <menuitem id="menu_comfyui_workflow" name="Workflows" parent="cartoon_comfyui.menu_comfyui_root" action="action_comfyui_workflow"
               sequence="20"/>
 
 </odoo>

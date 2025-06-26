@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_comfyui_root" name="ComfyUI" sequence="10" parent="cartoon_storage.menu_cartoon_root"/>
+</odoo>
