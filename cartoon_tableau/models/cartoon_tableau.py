@@ -167,6 +167,7 @@ class CartoonTableau(models.Model):
                         images = tableau.job_2.get_local_images()
                         if images:
                             tableau.image_3_id = self.env['cartoon.image'].create_by_path(images[0])
+                            tableau.image_3_id.put_transpary()
                             res['path_image'] = tableau.image_3_id.path
                     elif tableau.job_2.status == 'done' and tableau.image_3_id:
                         if tableau.time_2 > 0:
