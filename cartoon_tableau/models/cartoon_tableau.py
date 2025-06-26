@@ -93,7 +93,7 @@ class CartoonTableau(models.Model):
     @api.model
     def get_next_image(self, tableau_id=None):
         """ take the camera and the face """
-        _logger.info('--get_next_image---tableau_id-----', tableau_id)
+        _logger.info(f'--get_next_image---tableau_id: {tableau_id}')
         res = {}
         # first send
         if not tableau_id or tableau_id == 0:
@@ -177,7 +177,7 @@ class CartoonTableau(models.Model):
             else:
                 res['tableau_id'] = 0
 
-        _logger.info('----get_next_image---end----', tableau_id, res)
+        _logger.info(f'----get_next_image---end-: {tableau_id} {res}')
         return res
 
 

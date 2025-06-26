@@ -127,5 +127,6 @@ class ComfyUIJob(models.Model):
         for node in outputs:
             images = outputs[node].get('images', [])
             for image in images:
-                res.append(output_path + image['filename'])
+                if image.get('type', '?') == 'output':
+                    res.append(output_path + image['filename'])
         return res

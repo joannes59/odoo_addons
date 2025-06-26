@@ -213,12 +213,19 @@ class CartoonCamera(models.Model):
             res.append(image)
         return res
 
-    def get_frame_usb(self):
+    def get_frame_usb(self, time_init=0.1):
         """ Get a frame """
         self.ensure_one()
         camera = self
+        #camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        #camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         cap = cv2.VideoCapture(camera.device_node)
+        time.sleep(time_init)
         ret, frame = cap.read()
+        if not ret:
+            # Second essais
+            time.sleep(time_init)
+            ret, frame = cap.read()
         cap.release()
         return frame
 

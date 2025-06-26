@@ -7,8 +7,9 @@
         <field name="model">cartoon.tableau</field>
         <field name="arch" type="xml">
             <list string="Tableaux">
+                <field name="id"/>
                 <field name="name"/>
-              <field name="tableau_type"/>
+                <field name="tableau_type"/>
                 <field name="status"/>
                 <field name="image_1_id"/>
                 <field name="image_2_id"/>

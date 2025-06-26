@@ -62,7 +62,7 @@ class CartoonImage(models.Model):
                     directory = os.path.dirname(record.path)
                     if os.path.isdir(directory) and not os.listdir(directory):
                         os.rmdir(directory)
-                        
+
                 except Exception as e:
                     _logger.warning(f"Failed to delete file {record.path}: {e}")
         return super(CartoonImage, self).unlink()
