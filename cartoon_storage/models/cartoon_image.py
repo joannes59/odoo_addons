@@ -114,18 +114,11 @@ class CartoonImage(models.Model):
             image.width = width
             image.channels = channels
 
-    def gray_color(self):
-        """ put image in gray color """
-        for record in self:
-            image = cv2.imread(record.path)
-            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            cv2.imwrite("image_grayscale.jpg", gray_image)
 
     def put_transpary(self):
         # Charger l'image avec OpenCV en mode couleur (et alpha si existant)
         for record in self:
-            image_origin = cv2.imread(record.path, cv2.IMREAD_UNCHANGED)
-            image = cv2.cvtColor(image_origin, cv2.COLOR_BGR2GRAY)
+            image = cv2.imread(record.path, cv2.IMREAD_UNCHANGED)
 
             if image.shape[2] == 4:  # Si l'image possède un canal alpha
                 # Séparer les canaux BGR et Alpha
