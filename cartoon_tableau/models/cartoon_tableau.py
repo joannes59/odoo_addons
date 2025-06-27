@@ -153,16 +153,18 @@ class CartoonTableau(models.Model):
                                 'workflow_id': template.workflow_2.id,
                                 }
 
-                            if tableau.image_2_id.face_ids:
-                                face = tableau.image_2_id.face_ids[0]
-                                job_vals['vide_x'] = face.region_w
-                                job_vals['vide_y'] = face.region_h
 
-                            job_vals['seed'] = random.randint(1, 892622905047178)
 
                             tableau.job_2 = self.env['comfyui.job'].create(job_vals)
                             parameter = {'origin_image': tableau.image_2_id.path}
                             parameter['positive_text'] = tableau.create_face_prompt()
+
+                            if tableau.image_2_id.face_ids:
+                                face = tableau.image_2_id.face_ids[0]
+                                parameter['vide_x'] = face.region_w
+                                parameter['vide_y'] = face.region_h
+
+                            parameter['seed'] = random.randint(1, 892622905047178)
 
                             tableau.job_2.onchange_workflow_id()
                             tableau.job_2.parameter = json.dumps(parameter, indent=4)
