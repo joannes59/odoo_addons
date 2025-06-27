@@ -146,10 +146,18 @@ class CartoonTableau(models.Model):
                             res['path_image'] = tableau.image_2_id.path
                             tableau.status = 'image_3'
 
+
+
                             job_vals = {
                                 'name': 'JOB' + tableau.name + 'image_3',
                                 'workflow_id': template.workflow_2.id,
                                 }
+
+                            if tableau.image_2_id.face_ids:
+                                face = tableau.image_2_id.face_ids[0]
+                                job_vals['vide_x'] = face.region_w
+                                job_vals['vide_y'] = face.region_h
+
                             tableau.job_2 = self.env['comfyui.job'].create(job_vals)
                             parameter = {'origin_image': tableau.image_2_id.path}
                             parameter['positive_text'] = tableau.create_face_prompt()
@@ -190,7 +198,7 @@ class CartoonTableau(models.Model):
         self.ensure_one()
         prompt = "Medieval portrait, charcoal drawing with intricate linework."
         prompt += "charcoal_sketch, monochrome, greyscale, sketch by charcoal, smear strokes, monochrome, graphite_charcoal, lineart,"
-        prompt += "white void background, no shading"
+        prompt += "looking at viewer, white void background, no shading, "
 
         if self.image_1_id.face_ids:
             face = self.image_1_id.face_ids[0]
