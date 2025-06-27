@@ -158,6 +158,8 @@ class CartoonTableau(models.Model):
                                 job_vals['vide_x'] = face.region_w
                                 job_vals['vide_y'] = face.region_h
 
+                            job_vals['seed'] = random.randint(1, 892622905047178)
+
                             tableau.job_2 = self.env['comfyui.job'].create(job_vals)
                             parameter = {'origin_image': tableau.image_2_id.path}
                             parameter['positive_text'] = tableau.create_face_prompt()
