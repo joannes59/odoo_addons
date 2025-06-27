@@ -188,15 +188,17 @@ class CartoonTableau(models.Model):
     def create_face_prompt(self):
         """ Check genre and emotion """
         self.ensure_one()
-        prompt = "Medieval and Renaissance portrait, charcoal drawing with intricate linework."
+        prompt = "Medieval portrait, charcoal drawing with intricate linework."
+        prompt += "charcoal_sketch, monochrome, greyscale, sketch by charcoal, smear strokes, monochrome, graphite_charcoal, lineart,"
+        prompt += "white void background, no shading"
+
         if self.image_1_id.face_ids:
             face = self.image_1_id.face_ids[0]
-            gender = ''
             condition = [('category', '=', 'recueil_arras')]
 
             if face.dominant_gender != 'Other':
                 condition.append(('dominant_gender', '=', face.dominant_gender))
-                prompt.replace('portrait', 'man portrait')
+                prompt.replace('portrait', f'{face.dominant_gender} portrait')
 
             if face.dominant_emotion:
                 prompt += f"((( The dominant emotion is {face.dominant_emotion})))."

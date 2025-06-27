@@ -124,7 +124,8 @@ class CartoonImage(models.Model):
     def put_transpary(self):
         # Charger l'image avec OpenCV en mode couleur (et alpha si existant)
         for record in self:
-            image = cv2.imread(record.path, cv2.IMREAD_UNCHANGED)
+            image_origin = cv2.imread(record.path, cv2.IMREAD_UNCHANGED)
+            image = cv2.cvtColor(image_origin, cv2.COLOR_BGR2GRAY)
 
             if image.shape[2] == 4:  # Si l'image possède un canal alpha
                 # Séparer les canaux BGR et Alpha
