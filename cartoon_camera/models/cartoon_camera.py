@@ -150,13 +150,12 @@ class CartoonCamera(models.Model):
             except Exception as e:
                 continue
 
+    @api.model
     def get_wsdl_path(self):
         """ return local wsdl path """
-        for camera in self:
-            if not camera.wsdl_path:
-                module_path = os.path.dirname(os.path.abspath(__file__))
-                wsdl_path = module_path.replace('cartoon_camera/models', 'cartoon_camera/wsdl')
-                camera.wsdl_path = get_wsdl_path
+        module_path = os.path.dirname(os.path.abspath(__file__))
+        wsdl_path = module_path.replace('cartoon_camera/models', 'cartoon_camera/wsdl')
+        return wsdl_path
 
     def get_save_path(self, date=None, directory=None):
         # Format du nom de répertoire basé sur l'heure et la minute
@@ -172,14 +171,14 @@ class CartoonCamera(models.Model):
 
     def get_camera_info(self):
         """ Get information on camera """
-        self.get_wsdl_path()
+        wsdl_path = self.get_wsdl_path()
 
         for camera in self:
 
             text_profile = ''
             # Connexion à la caméra ONVIF
             onvif_camera = ONVIFCamera(camera.ip, camera.port, camera.user, camera.password,
-                                       wsdl_dir=camera.wsdl_path)
+                                       wsdl_dir=wsdl_path)
             # Service de gestion des médias
             media_service = onvif_camera.create_media_service()
 
@@ -191,20 +190,48 @@ class CartoonCamera(models.Model):
             for profile in profiles:
                 # URI pour les captures d'images (Snapshot URI)
                 snapshot_uri = media_service.GetSnapshotUri({'ProfileToken': profile.token})
+                stream_uri = media_service.GetStreamUri({
+                    'StreamSetup': {
+                        'Stream': 'RTP-Unicast',
+                        'Transport': {'Protocol': 'RTSP'}
+                    },
+                    'ProfileToken': profile.token
+                })
+                text_profile += (
+                    f"Profile: {profile.Name} ({profile.token})\n"
+                    f"  Snapshot URI: {snapshot_uri.Uri}\n"
+                    f"  Stream URI: {stream_uri.Uri}\n"
+                )
                 text_profile += f"{profile.token};{profile.Name};{snapshot_uri.Uri}\n"
             camera.profile = text_profile
+
+            # --- Device Info ---
+            devicemgmt = onvif_camera.create_devicemgmt_service()
+            device_info = devicemgmt.GetDeviceInformation()
+            camera.profile += f"{device_info.Manufacturer} - {device_info.Model} - {device_info.FirmwareVersion}"
+            # ['FirmwareVersion', 'HardwareId', 'Manufacturer', 'Model', 'SerialNumber']
+
+            # --- Network Interfaces ---
+            net_info = devicemgmt.GetNetworkInterfaces()
+            for net_interface in net_info:
+                print('-----net_interface-----', net_interface, dir(net_interface))
+                # ['Enabled', 'Extension', 'IPv4', 'IPv6', 'Info', 'Link', '_attr_1', 'token']
+
+            imaging_service = onvif_camera.create_imaging_service()
+            video_source_token = profiles[0].VideoSourceConfiguration.SourceToken
+            imaging_settings = imaging_service.GetImagingSettings({'VideoSourceToken': video_source_token})
+            imaging_info = str(imaging_settings)
+            print('-----imaging_info--------------', imaging_info, dir(imaging_info))
 
 
     def start_worker(self):
         for camera in self:
-            worker_thread = threading.Thread(target=camera.continue_snapshot, daemon=True)
-            worker_thread.start()
+            pass
 
     def save_snapshot(self, directory=None):
         """ get and save snapshot """
         res = []
         for camera in self:
-            time_start = time.time()
             if camera.state in ['disabled', 'draft']:
                 continue
 
@@ -287,8 +314,6 @@ class CartoonCamera(models.Model):
 
     def get_snapshot(self):
         """ Get image snapshot """
-        self.get_wsdl_path()
-
         for camera in self:
             time_start = time.time()
             frame = camera.get_frame()
@@ -308,14 +333,14 @@ class CartoonCamera(models.Model):
 
     def pantilt(self):
         """ move the camera """
-        self.get_wsdl_path()
+        wsdl_path = self.get_wsdl_path()
         pan_x = self.env.context.get('pan_x', 0.0)
         pan_y = self.env.context.get('pan_y', 0.0)
         #pan_z = self.env.context.get('pan_z', 0.0)
 
         for camera in self:
             onvif_camera = ONVIFCamera(camera.ip, camera.port, camera.user, camera.password,
-                                       wsdl_dir=camera.wsdl_path)
+                                       wsdl_dir=wsdl_path)
 
             ptz_service = onvif_camera.create_ptz_service()
             request = ptz_service.create_type('ContinuousMove')

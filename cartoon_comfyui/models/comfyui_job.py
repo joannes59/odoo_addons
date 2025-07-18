@@ -129,4 +129,5 @@ class ComfyUIJob(models.Model):
             for image in images:
                 if image.get('type', '?') == 'output':
                     res.append(output_path + image['filename'])
+        # http://192.168.0.101:8188/api/view?filename=ComfyUI_temp_qtnnd_00299_.png&subfolder=&type=temp
         return res
