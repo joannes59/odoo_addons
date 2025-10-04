@@ -3,9 +3,9 @@ tracker_type: botsort
 model: yolo11n-pose.pt
 
 # --- Paramètres généraux ---
-track_high_thresh: 0.3  # score minimal pour associer une détection existante
-track_low_thresh: 0.15
-new_track_thresh: 0.5
+track_high_thresh: 0.4  # score minimal pour associer une détection existante
+track_low_thresh: 0.2
+new_track_thresh: 0.8
 match_thresh: 0.9
 track_buffer: 60
 frame_rate: 30

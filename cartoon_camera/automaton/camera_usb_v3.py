@@ -60,7 +60,7 @@ class CameraDetection:
         self.grid_pt_selected = (0, 0)
 
         self.yolo_model_name = "yolo11n-pose.pt"
-        self.yolo_conf = 0.05 # seuil de confiance
+        self.yolo_conf = 0.5 # seuil de confiance
         self.yolo_filter_class = [0] # 0: personne, list of class to track
         self.yolo_model = None
         self.tracker = cv2.legacy.TrackerCSRT_create()
@@ -99,6 +99,9 @@ class CameraDetection:
         self.lock = threading.Lock()
         self.running = False
         self.thread = None
+
+        self.surface_mini = 0.1
+
 
 
     def update(self):
@@ -355,6 +358,7 @@ class CameraDetection:
 
     def show_tracking(self, frame):
         """ Add yolo box detection on frame """
+        frame_init = frame.copy()
         label_fps = f'{frame.shape} FPS: {self.time_fps}'
         cv2.putText(frame, label_fps, (10, 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
@@ -372,8 +376,9 @@ class CameraDetection:
             if bd.state == 'lost':
                 label += f':{bd.lost_frame}'
                 color = blue_color
-            if bd.state == 'new':
+            elif bd.state == 'new':
                 color = red_color
+
             label += f'-{int(100.0 * bd.conf)}%'
             cv2.rectangle(frame, (bd.x1, bd.y1), (bd.x2, bd.y2), color, 2)
             cv2.putText(frame, label, (bd.x1, bd.y1 - 10),
@@ -396,17 +401,17 @@ class CameraDetection:
                     cv2.circle(frame, (int(px), int(py)), 3, (0, 0, 255), 2)
 
                 bd.get_facing()
-                x1, y1 = min(x_vals), min(y_vals)
-                x2, y2 = max(x_vals), max(y_vals)
-                cv2.rectangle(frame, (x1 - 10, y1 - 10), (x2 + 10, y2 + 10), green_color, 2)
-                cv2.putText(frame, f' {bd.facing}', (x1, y2 + 30),
+                gender = bd.get_gender(frame_init)
+                cv2.rectangle(frame, (bd.face_x1, bd.face_y1), (bd.face_x2, bd.face_y2), green_color, 2)
+                cv2.putText(frame, f' {bd.facing} - {bd.gender}', (bd.face_x1, bd.face_y2 + 30),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, green_color, 1)
+
 
 
         # Show no tracking box
         for bd_void in self.box_detection:
             if bd_void.state == "tracking" and not bd_void.track_id:
-                cv2.rectangle(frame, (bd_void.x1 -1, bd_void.y1 -1), (bd_void.x2 +1, bd_void.y2 + 1), green_color, 2)
+                cv2.rectangle(frame, (bd_void.x1 -1, bd_void.y1 -1), (bd_void.x2 +1, bd_void.y2 + 1), (0,0,0), 2)
 
         return frame
 
@@ -641,7 +646,7 @@ class CameraDetection:
             # Check if some lost tracking_detection is corresponding
             if box_detection in box_detection_ok:
                 continue
-            elif box_detection.track_id:
+            elif box_detection.track_id and self.box_detection_mini(box_detection):
                 self.create_new_tracking_detection(box_detection)
 
         # -------- Delete old box_detection
@@ -655,6 +660,15 @@ class CameraDetection:
         # Update XY
         #self.update_tracking_detection_occluded()
         self.upadte_mean_h_w()
+
+    def box_detection_mini(self, box_detection ):
+        """ Return True , if box_detection is enought big to be tracked """
+        res = False
+        sreen_surface = self.camera_height * self.camera_width
+        box_surface = (box_detection.y1 - box_detection.y2) * (box_detection.x1 - box_detection.x2)
+        if box_surface / sreen_surface > self.surface_mini:
+            res = True
+        return res
 
     def update_tracking_detection(self, tracking_detection, box_detection):
         """ Update tracking by box detection """

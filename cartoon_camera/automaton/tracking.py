@@ -1,5 +1,19 @@
 import math
 
+import cv2
+import os
+import time
+
+from transformers import AutoImageProcessor, SiglipForImageClassification
+import torch
+
+
+KEYPOINTS_FACE = [0, 1, 2, 3, 4]
+# Load model and processor
+model_name = "prithivMLmods/Realistic-Gender-Classification"
+model = SiglipForImageClassification.from_pretrained(model_name)
+processor = AutoImageProcessor.from_pretrained(model_name)
+
 
 class BoxDetection:
     def __init__(self,x1, y1, x2, y2, label, conf, class_id, track_id):
@@ -88,6 +102,12 @@ class TrackingDetection:
         self.tracker = None
         
         self.facing = 'none'
+        self.gender = 'none'
+        self.face_x1 = 0
+        self.face_y1 = 0
+        self.face_x2 = 0
+        self.face_y2 = 0
+
 
     def get_facing(self, tol_ratio=0.1):
         """
@@ -102,18 +122,98 @@ class TrackingDetection:
             right_eye = self.keypoints[2]
             left_ear = self.keypoints[3]
             right_ear = self.keypoints[4]
+            facing = 'none'
 
             if right_ear[0] < right_eye[0] < nose[0] and nose[0] < left_eye[0] < left_ear[0]:
                 facing = 'front'
-            elif right_ear[0] > left_ear[0]:
+
+            if nose[0] - right_ear[0] > 2 * (left_ear[0] - nose[0]):
+                facing += ' right'
+            if left_ear[0] - nose[0] > 2 * (nose[0] - right_ear[0]):
+                facing += ' left'
+
+            if right_ear[0] > left_ear[0]:
                 facing = 'back'
+
+            if left_eye[1] > left_ear[1] or right_eye[1] > right_ear[1]:
+                facing += ' down'
+
+            if (nose[1] - left_eye[1] < left_ear[1] - nose[1]) or (nose[1] - right_eye[1] < right_ear[1] - nose[1]):
+                facing += ' up'
+
+            x_vals = []
+            y_vals = []
+            for plot in [left_eye, right_eye, left_ear, right_ear]:
+                x_vals.append(plot[0])
+                y_vals.append(plot[1])
+
+            width = max(x_vals) - min(x_vals)
+            hight = max(y_vals) - min(y_vals)
+            center = (int(min(x_vals) + 0.5 * width), int(min(y_vals) + 0.5 * hight))
+
+            if right_ear[0] < nose[0] and left_ear[0] < nose[0]:
+                center_ear = - int((2 * nose[0] - right_ear[0] - left_ear[0]) / 4)
+            elif right_ear[0] > nose[0] and  left_ear[0] > nose[0]:
+                center_ear =  int((left_ear[0] + right_ear[0] - 2 * nose[0]) / 4)
             else:
-                if right_ear[0] < nose[0] and right_ear[0] < nose[0]:
-                    facing = 'left'
-                elif right_ear[0] > nose[0] and right_ear[0] > nose[0]:
-                    facing = 'right'
+                center_ear = 0
+
+
+            self.face_x1 = int(min(x_vals) - 0.2 * width)
+            self.face_y1 = int(center[1] - width)
+            self.face_x2 = int(max(x_vals) + 0.2 * width)
+            self.face_y2 = int(center[1] + width)
+
+            if center_ear < 0:
+                self.face_x1 += center_ear
+            elif center_ear > 0:
+                self.face_x2 += center_ear
+
+            if self.face_x1 < self.x1:
+                self.face_x1 = self.x1
+            if self.face_x2 > self.x2:
+                self.face_x2 = self.x2
+            if self.face_y1 < self.y1:
+                self.face_y1 = self.y1
+            if self.face_y2 > self.y2:
+                self.face_y2 = self.y2
 
         self.facing = facing
+
+    def to_rgb(self, image):
+        if len(image.shape) == 2:  # Gris
+            return cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        elif image.shape[2] == 3:  # Couleur
+            return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        elif image.shape[2] == 4:  # RGBA / BGRA
+            return cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
+        else:
+            raise ValueError("Format d'image non supporté")
+
+    def get_gender(self, frame):
+        """ return deepface analyse """
+        if 'front' in self.facing and self.gender == 'none':
+            self.gender = 'test'
+            # Extraire le visage depuis la frame
+            face_crop = frame[self.face_y1:self.face_y2, self.face_x1:self.face_x2]
+
+            image = self.to_rgb(face_crop)
+            inputs = processor(images=image, return_tensors="pt")
+
+            with torch.no_grad():
+                outputs = model(**inputs)
+                logits = outputs.logits
+                probs = torch.nn.functional.softmax(logits, dim=1).squeeze().tolist()
+
+            id2label = {"0": "female", "1": "male"}
+            prediction = {id2label[str(i)]: round(probs[i], 3) for i in range(len(probs))}
+            if prediction.get('female') > 0.6:
+                self.gender = 'female'
+            elif prediction.get('male') > 0.6:
+                self.gender = 'male'
+            else:
+                self.gender = 'none'
+
 
     def validation_xy(self):
         """ Last validation  xy  values """

@@ -3,7 +3,7 @@ import cv2
 import base64
 import logging
 import numpy as np
-from deepface import DeepFace  # Assure-toi que ce module est installé
+from deepface import DeepFace
 
 _logger = logging.getLogger(__name__)
 
